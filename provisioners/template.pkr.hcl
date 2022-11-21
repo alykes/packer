@@ -8,11 +8,6 @@ data "amazon-ami" "globoticket" {
   most_recent = true
 }
 
-data "amazon-secretsmanager" "globoticket-live" {
-  name = "Globoticket-live"
-  key  = "SECRET_ARTIST_NAME"
-}
-
 source "amazon-ebs" "globoticket" {
   ssh_username                          = "ubuntu"
   ami_name                              = "globoticket-${uuidv4()}"
@@ -52,7 +47,7 @@ build {
 
   provisioner "shell" {
     execute_command  = "sudo -S env {{ .Vars }} {{ .Path }}"
-    environment_vars = ["SECRET_ARTIST_NAME=${data.amazon-secretsmanager.globoticket-live.value}"]
+    environment_vars = ["SECRET_ARTIST_NAME=${aws_secretsmanager("Globoticket-live", "SECRET_ARTIST_NAME")}"]
     script           = "scripts/build_nginx_webapp.sh"
   }
 
